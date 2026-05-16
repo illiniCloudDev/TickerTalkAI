@@ -9,10 +9,12 @@ const App = () => {
     e.preventDefault();
     if (!cik) return;
 
+    console.log("Searching for:", cik);
+
     setLoading(true);
     try {
       // We hit backend, which then hits the SEC
-      const response = await fetch(`http://localhost:5000/api/company/${cik}`);
+      const response = await fetch(`http://localhost:8080/api/company/${cik}`);
       const data = await response.json();
       setCompanyData(data);
     } catch (error) {
@@ -50,6 +52,21 @@ const App = () => {
           
           <div className="mt-4 p-4 bg-slate-900 rounded-lg overflow-hidden">
              <p className="text-green-400 text-xs font-mono">Latest Accession: {companyData.filings?.recent?.accessionNumber?.[0]}</p>
+             <h3 className="text-blue-400 text-xs font-bold mb-2 uppercase">Filing Metadata:</h3>
+             
+             {/* Use Object.keys().map() to safely list out the keys in the filings object */}
+             {Object.keys(companyData.filings || {}).map((key) => (
+               <p key={key} className="text-green-400 text-xs font-mono">
+                 {key}: {typeof companyData.filings[key] === 'object' ? '[Object Data]' : companyData.filings[key]}
+               </p>
+             ))}
+
+             <hr className="border-slate-700 my-2" />
+
+             {/* Diving deeper into the 'recent' object which contains the actual arrays */}
+             <p className="text-green-400 text-xs font-mono">
+                Recent Accession: {companyData.filings?.recent?.accessionNumber?.[0]}
+             </p>
           </div>
         </div>
       )}

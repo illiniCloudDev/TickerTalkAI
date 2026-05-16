@@ -6,34 +6,40 @@ import dotenv from 'dotenv';
 dotenv.config(); 
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
-//MIDDLEWARE
+// MIDDLEWARE
+// Updated to allow requests from Vite frontend on Port 5050
 app.use(cors({
-  origin: 'http://localhost:1000'
+  origin: 'http://localhost:5050'
 }));
 app.use(express.json());
 
-// The SEC requires a specific User-Agent format to avoid being blocked.
-// Format: 'Company Name ContactEmail'
-const SEC_HEADERS = {
+// Base headers for general SEC data requests (data.sec.gov)
+const BASE_HEADERS = {
   'User-Agent': 'SEC Insight Analytics charlie.posner@gmail.com',
-  'Accept-Encoding': 'gzip, deflate',
-  'Host': 'data.sec.gov'
+  'Accept-Encoding': 'gzip, deflate'
 };
 
 let tickerMap = {}; 
 
+/**
+ * Syncs the SEC's master ticker list to our local memory.
+ * Uses domain-specific headers to avoid 404/403 errors.
+ */
 const syncTickerMap = async () => {
     try {
-        
-        const response = await axios.get('https://www.sec.gov/files/company_tickers.json', { headers: SEC_HEADERS });
-        const data = response.data; 
+        const response = await axios.get('https://www.sec.gov/files/company_tickers.json', { 
+            headers: {
+                'User-Agent': 'SEC Insight Analytics charlie.posner@gmail.com',
+                'Accept-Encoding': 'gzip, deflate',
+                'Host': 'www.sec.gov' // Crucial for this specific endpoint
+            } 
+        });
 
-        console.log(data)
-
-        // organize SEC file 
+        const data = response.data;
         const newMap = {}; 
+        
         Object.values(data).forEach((item) => {
             newMap[item.ticker.toUpperCase()] = item.cik_str; 
         }); 
@@ -46,28 +52,35 @@ const syncTickerMap = async () => {
     }
 };
 
-//ROUTES
+// ROUTES
 app.get('/api/company/:query', async (req, res) => {
     try {
-
         let { query } = req.params; 
         query = query.toUpperCase().trim();
 
+        // Check if the query is a ticker in our map; otherwise assume it's a raw CIK
         const targetCik = tickerMap[query] || query;
-        const paddedCik = String(targetCik).padStart(10, '0');
 
+        // SAFETY GUARD: If the map failed to sync or the ticker doesn't exist, 
+        // targetCik will still be letters (like "AMD"). it is blocked here.
+        if (isNaN(targetCik)) {
+            return res.status(404).json({ 
+                message: `Ticker "${query}" not found. Please check your ticker or wait for map sync.` 
+            });
+        }
+
+        // SEC requires a 10-digit zero-padded string
+        const paddedCik = String(targetCik).padStart(10, '0');
         const url = `https://data.sec.gov/submissions/CIK${paddedCik}.json`;
 
-        console.log(`Searching SEC for Ticker/CIK: ${query} -> Padded CIK: ${paddedCik}`);
+        console.log(`Searching SEC for: ${query} -> Padded CIK: ${paddedCik}`);
 
-        //this is where the get request is made to SEC API
-        const response = await axios.get(url, { headers: SEC_HEADERS });
-
+        const response = await axios.get(url, { headers: BASE_HEADERS });
+        console.log(response.data.filings)
         res.json(response.data);
         
     } catch (error) {
         console.error('SEC Fetch Error:', error.message);
-
         res.status(error.response?.status || 500).json({
             message: 'Failed to retrieve SEC data',
             error: error.message
@@ -75,10 +88,13 @@ app.get('/api/company/:query', async (req, res) => {
     }
 });
 
+// START SERVER
 app.listen(PORT, async () => {
   console.log(`🚀 Backend bridge running on http://localhost:${PORT}`);
-
-  console.log('Initializing Ticker Map...')
-  await syncTickerMap()
-  console.log(`Listening for requests from http://localhost:1000`);
+  console.log('Initializing Ticker Map...');
+  
+  // Wait for the map to load before accepting the first user request
+  await syncTickerMap();
+  
+  console.log(`Listening for requests from http://localhost:5050`);
 });
