@@ -76,7 +76,7 @@ app.get('/api/company/:query', async (req, res) => {
         console.log(`Searching SEC for: ${query} -> Padded CIK: ${paddedCik}`);
 
         const response = await axios.get(url, { headers: BASE_HEADERS });
-        console.log(response.data.filings)
+        console.log(response.data)
         res.json(response.data);
         
     } catch (error) {

@@ -1,77 +1,59 @@
-import { useState } from 'react';
+import { useState } from "react";
+import Sidebar from "./components/Sidebar";
+import SearchBar from "./components/SearchBar";
 
-const App = () => {
-  const [cik, setCik] = useState('');
-  const [companyData, setCompanyData] = useState(null);
-  const [loading, setLoading] = useState(false);
+function App() {
+  const [activeTab, setActiveTab] = useState("home");
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!cik) return;
-
-    console.log("Searching for:", cik);
-
-    setLoading(true);
-    try {
-      // We hit backend, which then hits the SEC
-      const response = await fetch(`http://localhost:8080/api/company/${cik}`);
-      const data = await response.json();
-      setCompanyData(data);
-    } catch (error) {
-      console.error("Search failed:", error);
-    } finally {
-      setLoading(false);
+  // A helper function/render block to swap the main content based on activeTab
+  const renderContent = () => {
+    switch (activeTab) {
+      case "home":
+        return <SearchBar />;
+      case "documents":
+        return (
+          <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md">
+            <h1 className="text-2xl font-bold text-slate-800 mb-4">Document Dictionary</h1>
+            <p className="text-slate-600">What is a 10-K? What is an 8-K? Find out here.</p>
+          </div>
+        );
+      case "cheatsheet":
+        return (
+          <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md">
+            <h1 className="text-2xl font-bold text-slate-800 mb-4">Financial Cheat Sheet</h1>
+            <p className="text-slate-600">Mastering the Balance Sheet, Income Statement, and Cash Flows.</p>
+          </div>
+        );
+      case "redflags":
+        return (
+          <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md">
+            <h1 className="text-2xl font-bold text-slate-800 mb-4">Red Flags Checklist</h1>
+            <p className="text-slate-600">Keep an eye out for these warning signs in SEC filings.</p>
+          </div>
+        );
+      case "insiders":
+        return (
+          <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md">
+            <h1 className="text-2xl font-bold text-slate-800 mb-4">Insider Tracker</h1>
+            <p className="text-slate-600">Tracking C-Suite stock purchases and Form 4 files.</p>
+          </div>
+        );
+      default:
+        return <SearchBar />;
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md">
-      <h1 className="text-2xl font-bold text-slate-800 mb-4">SEC Filing Explorer</h1>
-      
-      <form onSubmit={handleSearch} className="flex gap-2 mb-6">
-        <input
-          type="text"
-          placeholder="Enter CIK (e.g. 1818874)"
-          className="flex-1 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={cik}
-          onChange={(e) => setCik(e.target.value)}
-        />
-        <button 
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          {loading ? 'Searching...' : 'Search'}
-        </button>
-      </form>
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* 1. Sidebar (Fixed Width: 64) */}
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {companyData && (
-        <div className="border-t pt-4">
-          <h2 className="text-xl font-semibold text-blue-900">{companyData.name}</h2>
-          <p className="text-slate-600">Ticker: <span className="font-mono">{companyData.tickers?.[0]}</span></p>
-          <p className="text-slate-600 text-sm">Exchange: {companyData.exchanges?.[0]}</p>
-          
-          <div className="mt-4 p-4 bg-slate-900 rounded-lg overflow-hidden">
-             <p className="text-green-400 text-xs font-mono">Latest Accession: {companyData.filings?.recent?.accessionNumber?.[0]}</p>
-             <h3 className="text-blue-400 text-xs font-bold mb-2 uppercase">Filing Metadata:</h3>
-             
-             {/* Use Object.keys().map() to safely list out the keys in the filings object */}
-             {Object.keys(companyData.filings || {}).map((key) => (
-               <p key={key} className="text-green-400 text-xs font-mono">
-                 {key}: {typeof companyData.filings[key] === 'object' ? '[Object Data]' : companyData.filings[key]}
-               </p>
-             ))}
-
-             <hr className="border-slate-700 my-2" />
-
-             {/* Diving deeper into the 'recent' object which contains the actual arrays */}
-             <p className="text-green-400 text-xs font-mono">
-                Recent Accession: {companyData.filings?.recent?.accessionNumber?.[0]}
-             </p>
-          </div>
-        </div>
-      )}
+      {/* 2. Main Content Area (Shifted right by 64 to avoid overlap) */}
+      <main className="flex-1 pl-64 p-8">
+        {renderContent()}
+      </main>
     </div>
   );
-};
+}
 
 export default App;
