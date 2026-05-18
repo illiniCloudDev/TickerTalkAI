@@ -8,23 +8,25 @@ TickerTalk AI is a full-stack, low-contrast dark-themed financial analytics hub 
 
 The repository uses a split-directory monolith design separating concerns between client and server layers:
 
-* **Frontend:** React 18+, Vite, Tailwind CSS (Custom Dark Slate Aesthetic)
-* **Backend:** Node.js, Express, Native Fetch Integration
+* **Frontend:** React 18+, Vite (running on Port 5050), Tailwind CSS (Custom Dark Slate Aesthetic), Native Fetch API
+* **Backend:** Node.js, Express (running on Port 8080), Axios for SEC Endpoint Routing, Dotenv
 * **Data Source:** SEC EDGAR REST API Ecosystem
 
+```text
 TICKERTALK AI/
-├── backend/            # Express REST API (Handles SEC communications & rate-limiting)
+├── backend/            # Express REST API & Ticker-to-CIK Sync Engine
 │   ├── node_modules/
 │   ├── package.json
 │   └── server.js
 └── frontend/           # Vite + React App (Responsive Multi-Column UI)
-├── src/
-│   ├── components/ # SearchBar, SideBar, etc.
-│   ├── App.jsx     # Global UI Router & Consolidated Core State
-│   └── main.jsx
-├── package.json
-└── vite.config.js
+    ├── src/
+    │   ├── components/ # SearchBar, SideBar, etc.
+    │   ├── App.jsx     # Global UI Router & Consolidated Core State
+    │   └── main.jsx
+    ├── package.json
+    └── vite.config.js
 
+```
 ---
 
 ## ✨ Features Implemented
@@ -42,9 +44,11 @@ TICKERTALK AI/
 Follow these steps to spin up both components of your application locally:
 
 ### 1. Prerequisites
+
 Make sure you have [Node.js](https://nodejs.org/) (v16 or higher) installed on your system.
 
 ### 2. Clone and Setup Backend
+
 Open your terminal from the project's root directory:
 
 ```bash
@@ -57,10 +61,15 @@ npm install
 # Start the local Express server (Defaults to Port 8080)
 node server.js
 
-Note: The server will announce when the SEC master ticker list maps have finished downloading before accepting incoming queries.
+```
 
-### 3. Setup FrontEnd Client 
+> **Note:** The server will announce when the SEC master ticker list maps have finished downloading before accepting incoming queries.
+
+### 3. Setup Frontend Client
+
 Open a second terminal window or split your current terminal, remaining at the project root directory:
+
+```bash
 # Navigate to the UI layer
 cd frontend
 
@@ -70,25 +79,30 @@ npm install
 # Boot up the local Vite development environment
 npm run dev
 
-📡 Core API Points Logged
-The backend acts as an endpoint mediator communicating directly with data.sec.gov.
+```
 
-Company General Submissions: GET http://localhost:8080/api/company/:query
-
-Accepts: A market ticker symbol (e.g. SOFI, MSFT) or a raw CIK integer.
-
-Resolves: General organizational attributes, historical tickers, exchange alignments, and recent submission arrays.
+Once started, open your browser to your custom Vite local environment address: `http://localhost:5050`.
 
 ---
-🗺️ Future Roadmap
-[ ] AI Digest Integration: Embed large language model processing agents to dynamically read primary documents (Form 10-K/Q) and extract explicit operational changes.
 
-[ ] Financial Cheat Sheet Module: Interactive UI components compiling balance sheet structural shifts directly from api/xbrl/companyfacts datasets.
+## 📡 Core API Points Logged
 
-[ ] Red Flags Smart Filter: Auto-highlight parameters tracking anomalies like sudden controller resignations (8-K) or heavy executive liquidation events (Form 4).
+The backend acts as an endpoint mediator communicating directly with `data.sec.gov`.
+
+### Company General Submissions
+
+* **Endpoint:** `GET http://localhost:8080/api/company/:query`
+* **Accepts:** A market ticker symbol (e.g. `SOFI`, `MSFT`) or a raw CIK integer.
+* **Resolves:** General organizational attributes, historical tickers, exchange alignments, and recent submission arrays.
+
 ---
 
-### 💡 Pro Tip for Running This Project
-Since your backend and frontend exist in two different directories, you constantly have to run two terminal commands. If you want to run your entire app with a single command from your root directory in the future, you can install a package called **`concurrently`**. 
+## 🗺️ Future Roadmap
 
-Let me know if you want to add a main `package.json` file to the root folder to handle that script shortcut!
+* [ ] **AI Digest Integration:** Embed large language model processing agents to dynamically read primary documents (`Form 10-K/Q`) and extract explicit operational changes.
+* [ ] **Financial Cheat Sheet Module:** Interactive UI components compiling balance sheet structural shifts directly from `api/xbrl/companyfacts` datasets.
+* [ ] **Red Flags Smart Filter:** Auto-highlight parameters tracking anomalies like sudden controller resignations (`8-K`) or heavy executive liquidation events (`Form 4`).
+
+```
+
+---
