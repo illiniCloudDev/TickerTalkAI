@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import companyRoutes from './routes/company.js';
-import { syncTickerMap } from './controllers/company.js';
+import { syncTickerMap } from './controllers/companyFacts.js';
 dotenv.config(); 
 
 const app = express();

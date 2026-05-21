@@ -42,7 +42,7 @@ export const syncTickerMap = async () => {
  * @route   GET /api/company/:query
  * @access  Public (Will accept protect middleware later)
  */
-export const getCompanyData = async (req, res) => {
+export const getCompanyFacts = async (req, res) => {
   try {
     let { query } = req.params; 
     query = query.toUpperCase().trim();
@@ -59,20 +59,20 @@ export const getCompanyData = async (req, res) => {
 
     // SEC systems strictly require a 10-digit zero-padded string
     const paddedCik = String(targetCik).padStart(10, '0');
-    const url = `https://data.sec.gov/submissions/CIK${paddedCik}.json`;
+    const url = `https://data.sec.gov/api/xbrl/companyfacts/CIK${paddedCik}.json`;
 
-    console.log(`📡 Controller fetching SEC data for: ${query} -> Padded CIK: ${paddedCik}`);
+    console.log(`📡 Controller fetching COMPANY FACTS for: ${query} -> Padded CIK: ${paddedCik}`);
 
     const response = await axios.get(url, { headers: BASE_HEADERS });
     
     // Return the raw SEC data payload straight back to your frontend fetch client
-    console.log(response.data.filings)
+    console.log(response.data)
     res.json(response.data);
     
   } catch (error) {
     console.error('❌ SEC Fetch Error inside controller:', error.message);
     res.status(error.response?.status || 500).json({
-      message: 'Failed to retrieve SEC data via backend bridge',
+      message: 'Failed to retrieve COMPANY data via backend bridge',
       error: error.message
     });
   }
