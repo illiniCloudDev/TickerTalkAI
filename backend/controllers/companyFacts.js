@@ -66,7 +66,7 @@ export const getCompanyFacts = async (req, res) => {
     const response = await axios.get(url, { headers: BASE_HEADERS });
     
     // Return the raw SEC data payload straight back to your frontend fetch client
-    console.log(response.data)
+    console.log(response.data.facts)
     res.json(response.data);
     
   } catch (error) {
