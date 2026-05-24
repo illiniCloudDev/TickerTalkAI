@@ -66,7 +66,9 @@ export const getCompanyFacts = async (req, res) => {
     const response = await axios.get(url, { headers: BASE_HEADERS });
     
     // Return the raw SEC data payload straight back to your frontend fetch client
-    console.log(response.data.facts)
+    console.log(response.data.facts['us-gaap'].AccruedLiabilitiesCurrent.units['USD'])
+    //console.log(response.data.facts['us-gaap'].AccruedLiabilitiesCurrent.units['USD'])
+
     res.json(response.data);
     
   } catch (error) {
