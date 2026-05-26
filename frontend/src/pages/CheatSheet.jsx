@@ -1,6 +1,9 @@
 import { useState } from "react";
 import FactsSearchBar from "../components/FactsSearchBar";
 import CurrentLiabilitiesChart from "../components/CurrentLiabilitiesChart";
+import RevenueChart from "../components/RevenueChart";
+import AssetsChart from "../components/AssetsCharts";
+import GrossProfitChart from "../components/GrossProfitChart";
 
 const CheatSheet = () => {
   // Holds the massive raw JSON payload from the backend route mapping
@@ -28,42 +31,18 @@ const CheatSheet = () => {
         </div>
 
         {/* SLOT 2: Future Metrics Template */}
-        <div className="w-full bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl h-[360px] flex flex-col justify-between">
-          <div>
-            <h3 className="text-base font-bold text-slate-100">Chart 2 (Future Metrics)</h3>
-            <p className="text-xs text-slate-400">Balance Sheet breakdown coming soon</p>
-          </div>
-          <div className="flex-1 flex items-center justify-center border border-dashed border-slate-800 rounded-lg mt-4 bg-slate-950/40">
-            <span className="text-sm text-slate-500 font-medium tracking-wide animate-pulse">
-              ✨ Future Data Stream coming soon...
-            </span>
-          </div>
+        <div className="w-full min-h-[360px]">
+          <RevenueChart rawFactsData={companyFactsData}/> 
         </div>
 
         {/* SLOT 3: Future Data Template */}
-        <div className="w-full bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl h-[360px] flex flex-col justify-between">
-          <div>
-            <h3 className="text-base font-bold text-slate-100">Chart 3 (Future Data)</h3>
-            <p className="text-xs text-slate-400">Cash Flow allocation telemetry matrix</p>
-          </div>
-          <div className="flex-1 flex items-center justify-center border border-dashed border-slate-800 rounded-lg mt-4 bg-slate-950/40">
-            <span className="text-sm text-slate-500 font-medium tracking-wide animate-pulse">
-              ✨ Future Data Stream coming soon...
-            </span>
-          </div>
+        <div className="w-full min-h-[360px]">
+          <AssetsChart rawFactsData={companyFactsData}/> 
         </div>
 
         {/* SLOT 4: Future Analysis Template */}
-        <div className="w-full bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl h-[360px] flex flex-col justify-between">
-          <div>
-            <h3 className="text-base font-bold text-slate-100">Chart 4 (Future Analysis)</h3>
-            <p className="text-xs text-slate-400">Margin and valuation ratio analysis tracking</p>
-          </div>
-          <div className="flex-1 flex items-center justify-center border border-dashed border-slate-800 rounded-lg mt-4 bg-slate-950/40">
-            <span className="text-sm text-slate-500 font-medium tracking-wide animate-pulse">
-              ✨ Future Data Stream coming soon...
-            </span>
-          </div>
+        <div className="w-full min-h-[360px]">
+          <GrossProfitChart rawFactsData={companyFactsData}/> 
         </div>
 
       </div>

@@ -4,26 +4,60 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 const CurrentLiabilitiesChart = ({ rawFactsData }) => {
   
   // Clean, filter, and format the data using useMemo so it only calculates when data changes
-  const formattedData = useMemo(() => {
-    if (!rawFactsData?.facts?.['us-gaap']?.AccruedLiabilitiesCurrent?.units?.USD) {
-      return [];
+const formattedData = useMemo(() => {
+  if (!rawFactsData?.facts?.['us-gaap']) return [];
+
+  const usGaap = rawFactsData.facts['us-gaap'];
+
+  // 1. Define a list of alternative GAAP keys that represent short-term liabilities
+  const liabilityTaxonomyFallbacks = [
+    'AccruedLiabilitiesCurrent',
+    'AccountsPayableAndAccruedLiabilitiesCurrent',
+    'AccountsPayableCurrent',
+    'OtherLiabilitiesCurrent'
+  ];
+
+  let rawUnitsArray = null;
+  let activeKeyName = '';
+
+  // 2. Loop through our preferences and grab the first one that actually contains USD array data
+  for (const key of liabilityTaxonomyFallbacks) {
+    if (usGaap[key]?.units?.USD) {
+      rawUnitsArray = usGaap[key].units.USD;
+      activeKeyName = key;
+      
+      // If we are looking at Apple, 'AccruedLiabilitiesCurrent' only goes to 2017. 
+      // If we want the FULL timeline, we might want to check if a combined key has MORE total data points.
+      // For now, let's break as soon as we find a valid array.
+      break;
     }
+  }
 
-    const rawUnitsArray = rawFactsData.facts['us-gaap'].AccruedLiabilitiesCurrent.units.USD;
+  // If none of the fallback keys exist, return empty array
+  if (!rawUnitsArray) {
+    console.warn("⚠️ No short-term liability taxonomy keys matched this entity.");
+    return [];
+  }
 
-    return rawUnitsArray
-      // 1. Target only annual reports to get a clean chronological timeline
-      .filter(item => item.form === '10-K')
-      // 2. Map and format the fields specifically for Recharts
-      .map(item => ({
-        year: String(item.fy),
-        // Convert raw dollars to Millions ($3,736,794 becomes 3.74)
-        liabilities: Number((item.val / 1000000).toFixed(2)),
-        formType: item.form,
-      }))
-      // 3. Sort by year ascending just in case the SEC array order is flipped
-      .sort((a, b) => a.year.localeCompare(b.year));
-  }, [rawFactsData]);
+  console.log(`📊 Charting liabilities using active taxonomy key: ${activeKeyName}`);
+
+  const seenYears = new Set();
+
+  return rawUnitsArray
+    .filter(item => item.form === '10-K')
+    .map(item => ({
+      year: String(item.fy),
+      liabilities: Number((item.val / 1000000).toFixed(2)),
+      filedDate: item.filed 
+    }))
+    .sort((a, b) => b.filedDate.localeCompare(a.filedDate))
+    .filter(item => {
+      if (seenYears.has(item.year)) return false;
+      seenYears.add(item.year);
+      return true;
+    })
+    .sort((a, b) => a.year.localeCompare(b.year));
+}, [rawFactsData]);
 
   if (formattedData.length === 0) {
     return (
